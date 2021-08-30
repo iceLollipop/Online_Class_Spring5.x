@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-4.2.xsd"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+>
+
+    <!--
+        使用Set方法构造对象
+        name:bean的name 用于代码中查找本对象实例
+        id:如果没有name 可以用id来指代
+        class:当前类的全路径名
+        scope: prototype singleton 当前对象是只生产一次还是每次获取时重新生产
+
+        使用property构建bean对象,如果此对象构造器重载了，需要保留无参构造器
+
+        Spring5.x Bean生命周期
+        init-method
+        destroy-method
+    -->
+    <bean name="video" class="net.online_class.spring.domain.Video" scope="singleton"
+          init-method="init"
+          destroy-method="destroy">
+        <property name="title" value="Spring5.x 课程"/>
+        <property name="id" value="23"/>
+            <!--list类型注入-->
+<!--            <property name="chapterList">-->
+<!--                <list>-->
+<!--                    <value>第一章SpringBoot</value>-->
+<!--                    <value>第二章Mybatis</value>-->
+<!--                    <value>第三章Spring</value>-->
+<!--                </list>-->
+<!--            </property>-->
+<!--            <property name="videoMap">-->
+<!--                <map>-->
+<!--                    <entry key="1" value="SpringCloud课程"></entry>-->
+<!--                    <entry key="2" value="面试课程"></entry>-->
+<!--                    <entry key="3" value="javaweb课程"></entry>-->
+<!--                </map>-->
+<!--            </property>-->
+    </bean>
+
+    <!-- 注册BeanPostProcessor -->
+    <bean class="net.online_class.spring.processor.CustomBeanPostProcessor"/>
+    <!--
+    <bean id="videoExtend" class="net.online_class.spring.domain.VideoExtend" scope="singleton" parent="video">
+        <property name="summary" value="这个是summary"></property>
+    </bean>
+    -->
+
+    <!--
+    使用构造器构造bean对象
+    <bean name="video" class="net.online_class.spring.domain.Video" scope="singleton">
+        <constructor-arg name="id" value="12"></constructor-arg>
+        <constructor-arg name="title" value="面试专题课程第一季"></constructor-arg>
+    </bean>
+    -->
+
+    <!-- autowire="" byName byType  -->
+    <bean name="videoOrder" class="net.online_class.spring.domain.VideoOrder" autowire="byType">
+        <property name="id" value="001"/>
+        <property name="outTradeNo" value="No678594132"/>
+        <!-- <property name="video" ref="video"/>-->
+    </bean>
+
+    <!-- 配置切面的bean -->
+    <bean class="net.online_class.spring.aop.TimeHandler" id="timeHandler"/>
+    <!-- 代码中使用的bean -->
+    <bean class="net.online_class.spring.service.VideoServiceImpl" id="videoService"/>
+    <aop:config>
+        <aop:aspect id="timeAspect" ref="timeHandler">
+            <aop:pointcut id="allMethodLogPointCut" expression="execution(* net.online_class.spring.service.VideoService.*(..))"/>
+            <aop:before method="printBefore" pointcut-ref="allMethodLogPointCut"></aop:before>
+            <aop:after method="printAfter" pointcut-ref="allMethodLogPointCut"></aop:after>
+        </aop:aspect>
+    </aop:config>
+
+</beans>
